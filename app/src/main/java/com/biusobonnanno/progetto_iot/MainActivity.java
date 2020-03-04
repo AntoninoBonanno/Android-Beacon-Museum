@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             public void onClick(View view) {
                 if(isScan) stopScan();
                 else startScan();
-
+                findViewById(R.id.progressBar).setVisibility(isScan ? View.VISIBLE : View.GONE);
                 fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(MainActivity.this, isScan ? R.color.colorPauseFab : R.color.colorSecondary)));
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     /** Stop dello scan **/
     private void stopScan() {
-        beaconManager.unbind(this);
+        if(beaconManager.isBound(this)) beaconManager.unbind(this);
         isScan = false;
     }
 
