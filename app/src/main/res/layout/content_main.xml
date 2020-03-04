@@ -8,15 +8,28 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <Switch
-        android:id="@+id/switch_enable_bt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Bluetooth "
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.948"
+    <LinearLayout
+        android:layout_width="410dp"
+        android:layout_height="672dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Switch
+            android:id="@+id/switch_enable_bt"
+            android:layout_width="373dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Bluetooth " />
+
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="623dp">
+
+        </ListView>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

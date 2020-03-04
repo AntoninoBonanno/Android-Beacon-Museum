@@ -1,10 +1,7 @@
 package com.biusobonnanno.progetto_iot;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,19 +14,17 @@ import android.os.Bundle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -40,7 +35,9 @@ import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
@@ -52,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
+
+    private final List<String> ListElementsArrayList = new ArrayList<>();
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +66,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             finish();
         }
 
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")); // iBeacon
+        initBeaconManager(); //inizializzo il beaconManager
 
         final Switch enable_bt = findViewById(R.id.switch_enable_bt);
         enable_bt.setChecked(bluetoothState.isEnabled());
@@ -98,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                 Snackbar.make(view, isScan ? "Start scan" : "Stop scan", Snackbar.LENGTH_LONG).show();
             }
         });
+
+        adapter = new ArrayAdapter<> (MainActivity.this, android.R.layout.simple_list_item_1, ListElementsArrayList);
+        ListView listview = findViewById(R.id.listView);
+        listview.setAdapter(adapter);
     }
 
     @Override
@@ -128,32 +131,56 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         return super.onOptionsItemSelected(item);
     }
 
+    /** Codice per logica Beacon */
+
+    private void initBeaconManager() {
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+        // Add all the beacon types we want to discover
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-2=0499,i:4-19,i:20-21,i:22-23,p:24-24")); // TBD - RUUVI_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24")); // iBeacon - IBEACON_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT));
+    }
+
+    /** Funzione che individua i beacon  */
     @Override
     public void onBeaconServiceConnect() {
         beaconManager.addRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                if (beacons.size() > 0) {
-                    Beacon firstBeacon = beacons.iterator().next();
-                    Log.d(TAG,"The first beacon " + firstBeacon.toString() + " is about " + firstBeacon.getDistance() + " meters away.");
-                }
+                if(isScan) storeBeacons(beacons);
             }
         });
         try {
             beaconManager.startRangingBeaconsInRegion(new Region("myRangingUniqueId", null, null, null));
-        } catch (RemoteException e) {    }
+        } catch (RemoteException e) { e.printStackTrace(); }
     }
 
-
+    /**
+     * Funzione che fa partire la scansione, se ci sono i permessi
+     */
     private void startScan(){
         if (!isPermissionGranted()) return;
         if (!bluetoothState.isEnabled()) {
             Toast.makeText(this, "Bluetooth is disabled", Toast.LENGTH_LONG).show();
             return;
         }
-
         beaconManager.bind(MainActivity.this);
         isScan = true;
+    }
+
+    private void storeBeacons(Collection<Beacon> beacons){
+        if (beacons.size() > 0) {
+            Beacon firstBeacon = beacons.iterator().next();
+            if(!ListElementsArrayList.contains(firstBeacon.toString())){
+                ListElementsArrayList.add(firstBeacon.toString());
+                adapter.notifyDataSetChanged();
+            }
+
+            Log.d(TAG,"size " + beacons.size());
+            Log.d(TAG,"The first beacon " + firstBeacon.toString() + " is about " + firstBeacon.getDistance() + " meters away.");
+        }
     }
 
     /** Codice per avere accesso alla localizzazione **/
@@ -228,11 +255,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                     builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons.");
                     builder.setPositiveButton(android.R.string.ok, null);
                     builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
                         @Override
                         public void onDismiss(DialogInterface dialog) {
                         }
-
                     });
                     builder.show();
                 }
@@ -258,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         }
     }
 
-    /** Codice per verificare stato Bluetooth*/
+    /** Codice per verificare stato Bluetooth **/
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
