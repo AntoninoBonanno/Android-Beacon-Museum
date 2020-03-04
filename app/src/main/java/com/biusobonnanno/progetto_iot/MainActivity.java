@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private boolean isScan = false;
     private BluetoothAdapter bluetoothState;
+    private BroadcastReceiver mReceiver;
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
@@ -73,26 +76,6 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             finish();
         }
         initBeaconManager(); //inizializzo il beaconManager
-
-        final Switch enable_bt = findViewById(R.id.switch_enable_bt);
-        enable_bt.setChecked(bluetoothState.isEnabled());
-        enable_bt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(!isChecked) {
-                    if (!bluetoothState.isEnabled()) return;
-                    bluetoothState.disable();
-                    Toast.makeText(MainActivity.this, "Turned off", Toast.LENGTH_SHORT).show();
-                }else {
-                    if (bluetoothState.isEnabled()) return;
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, 0);
-                }
-            }
-        });
-
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mReceiver, filter);
 
         final FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -126,7 +109,48 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        final MenuItem bluetoothButton = menu.findItem(R.id.action_bluetooth);
+        setBluetoothIcon(bluetoothButton, bluetoothState.isEnabled());
+        bluetoothButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (!bluetoothState.isEnabled()) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, 0);
+                }
+                else bluetoothState.disable();
+                return true;
+            }
+        });
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                final String action = intent.getAction();
+                if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                    switch (state) {
+                        case BluetoothAdapter.STATE_OFF:
+                            setBluetoothIcon(bluetoothButton, false);
+                            Toast.makeText(MainActivity.this, "Bluetooth disabled", Toast.LENGTH_SHORT).show();
+                            break;
+                        case BluetoothAdapter.STATE_ON:
+                            setBluetoothIcon(bluetoothButton, true);
+                            Toast.makeText(MainActivity.this, "Bluetooth enabled", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mReceiver, filter);
         return true;
+    }
+
+    private void setBluetoothIcon(MenuItem item, boolean status){
+        Drawable icon = AppCompatResources.getDrawable(MainActivity.this, status ? R.drawable.ic_round_bluetooth_24px : R.drawable.ic_round_bluetooth_disabled_24px).mutate();
+        item.setIcon(icon);
     }
 
     @Override
@@ -303,25 +327,4 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             }
         }
     }
-
-    /** Codice per verificare stato Bluetooth **/
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            final Switch enable_bt = findViewById(R.id.switch_enable_bt);
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        enable_bt.setChecked(false);
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        enable_bt.setChecked(true);
-                        break;
-                }
-            }
-        }
-    };
 }
