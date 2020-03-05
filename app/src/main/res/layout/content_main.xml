@@ -20,7 +20,9 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="1dp"
             android:layout_marginBottom="1dp"
-            android:orientation="vertical" />
+            android:orientation="vertical" >
+        <include layout="@layout/item_beacon_empty" />
+        </LinearLayout>
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

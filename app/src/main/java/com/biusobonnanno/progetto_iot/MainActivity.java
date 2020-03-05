@@ -44,6 +44,7 @@ import org.altbeacon.beacon.Region;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
@@ -54,11 +55,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
-    HashMap<String, Beacon> beaconSaved = new HashMap<String, Beacon>();
     private BeaconManager beaconManager;
-
-    private final List<String> ListElementsArrayList = new ArrayList<>();
-    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +77,6 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                 toggleScan(true);
             }
         });
-
-        /*adapter = new ArrayAdapter<> (MainActivity.this, android.R.layout.simple_list_item_1, ListElementsArrayList);
-        ListView listview = findViewById(R.id.listView);
-        listview.setAdapter(adapter);*/
     }
 
     @Override
@@ -173,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         beaconManager.addRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                if(beaconManager.isBound(MainActivity.this) == true) storeBeacons(beacons);
+                if(beaconManager.isBound(MainActivity.this) == true) showBeacons(beacons);
             }
         });
         try {
@@ -186,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         boolean isScan = false;
         if(beaconManager.isBound(MainActivity.this) == true) beaconManager.unbind(MainActivity.this);
         else if (enable && isPermissionGranted()) {
-            if (!bluetoothState.isEnabled()) Toast.makeText(MainActivity.this, "Bluetooth is disabled", Toast.LENGTH_LONG).show();
+            if (!bluetoothState.isEnabled()) Toast.makeText(MainActivity.this, R.string.enable_bluetooth_to_start_scanning, Toast.LENGTH_LONG).show();
             else {
                 beaconManager.bind(MainActivity.this);
                 isScan = true;
@@ -205,27 +198,24 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     }
 
     /** Memorizza i beacons **/
-    private void storeBeacons(Collection<Beacon> beacons){
-        if (beacons.size() > 0) {
-
-            Beacon firstBeacon = beacons.iterator().next();
-
-            LinearLayout dynamicContent = (LinearLayout) findViewById(R.id.dynamic_content);
-            View wizardView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
-            ((TextView)wizardView.findViewById(R.id.beacon_address)).setText(firstBeacon.getBluetoothAddress());
-            ((TextView)wizardView.findViewById(R.id.beacon_type)).setText(BeaconUtility.getType(firstBeacon));
-            ((TextView)wizardView.findViewById(R.id.beacon_distance)).setText(String.format("%.2f", firstBeacon.getDistance()) + " m");
-
-            dynamicContent.addView(wizardView);
-
-            /*if(!beaconSaved.containsKey(firstBeacon.getBluetoothAddress())) beaconSaved.put(firstBeacon.getBluetoothAddress(), firstBeacon);
-            if(!ListElementsArrayList.contains(firstBeacon.toString())){
-                ListElementsArrayList.add(firstBeacon.toString());
-                adapter.notifyDataSetChanged();
-            }*/
-
-            Log.d(TAG,"size " + beacons.size());
-            Log.d(TAG,"The first beacon " + firstBeacon.toString() + " is about " + firstBeacon.getDistance() + " meters away.");
+    private void showBeacons(Collection<Beacon> beacons){
+        if (beacons.size() <= 0) return;
+        LinearLayout dynamicContent = findViewById(R.id.dynamic_content);
+        dynamicContent.removeAllViews();
+        Iterator<Beacon> beaconIterator = beacons.iterator();
+        while (beaconIterator.hasNext()){
+            final Beacon findBeacon = beaconIterator.next();
+            View newBeaconView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
+            newBeaconView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG,"Beacon click " + findBeacon.toString());
+                }
+            });
+            ((TextView)newBeaconView.findViewById(R.id.beacon_address)).setText(findBeacon.getBluetoothAddress());
+            ((TextView)newBeaconView.findViewById(R.id.beacon_type)).setText(BeaconUtility.getType(findBeacon));
+            ((TextView)newBeaconView.findViewById(R.id.beacon_distance)).setText(String.format("%.2f", findBeacon.getDistance()));
+            dynamicContent.addView(newBeaconView);
         }
     }
 
