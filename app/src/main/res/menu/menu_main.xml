@@ -11,6 +11,5 @@
         android:id="@+id/action_bluetooth"
         android:icon="@drawable/ic_round_bluetooth_24px"
         android:title="@string/bluetooth_state"
-        app:iconTint="@color/colorOnPrimary"
         app:showAsAction="ifRoom" />
 </menu>

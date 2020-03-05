@@ -9,11 +9,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.biusobonnanno.progetto_iot.Models.BeaconUtility;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -29,9 +29,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.altbeacon.beacon.Beacon;
@@ -46,19 +46,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     private static final String TAG = "myBeacon";
-    private BeaconManager beaconManager;
 
-    private boolean isScan = false;
-    private BluetoothAdapter bluetoothState;
-    private BroadcastReceiver mReceiver;
+    private BluetoothAdapter bluetoothState = BluetoothAdapter.getDefaultAdapter();
+    private BroadcastReceiver observeBluetoothState;
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
-
     HashMap<String, Beacon> beaconSaved = new HashMap<String, Beacon>();
+    private BeaconManager beaconManager;
 
     private final List<String> ListElementsArrayList = new ArrayList<>();
     private ArrayAdapter<String> adapter;
@@ -67,42 +64,33 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        bluetoothState = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothState == null) {
             Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
             finish();
         }
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         initBeaconManager(); //inizializzo il beaconManager
 
-        final FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isScan) stopScan();
-                else startScan();
-                findViewById(R.id.progressBar).setVisibility(isScan ? View.VISIBLE : View.GONE);
-                fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(MainActivity.this, isScan ? R.color.colorPauseFab : R.color.colorSecondary)));
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(MainActivity.this, isScan ? R.drawable.play_to_pause : R.drawable.pause_to_play);
-                    fab.setImageDrawable(anim);
-                    anim.start();
-                } else fab.setImageDrawable(AppCompatResources.getDrawable(MainActivity.this, isScan ? R.drawable.pause_icon : R.drawable.play_icon));
+                toggleScan(true);
             }
         });
 
-        adapter = new ArrayAdapter<> (MainActivity.this, android.R.layout.simple_list_item_1, ListElementsArrayList);
+        /*adapter = new ArrayAdapter<> (MainActivity.this, android.R.layout.simple_list_item_1, ListElementsArrayList);
         ListView listview = findViewById(R.id.listView);
-        listview.setAdapter(adapter);
+        listview.setAdapter(adapter);*/
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(observeBluetoothState);
+        toggleScan(false);
     }
 
     @Override
@@ -111,19 +99,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         final MenuItem bluetoothButton = menu.findItem(R.id.action_bluetooth);
         setBluetoothIcon(bluetoothButton, bluetoothState.isEnabled());
-        bluetoothButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (!bluetoothState.isEnabled()) {
-                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                    startActivityForResult(enableBtIntent, 0);
-                }
-                else bluetoothState.disable();
-                return true;
-            }
-        });
 
-        mReceiver = new BroadcastReceiver() {
+        observeBluetoothState = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 final String action = intent.getAction();
@@ -133,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                         case BluetoothAdapter.STATE_OFF:
                             setBluetoothIcon(bluetoothButton, false);
                             Toast.makeText(MainActivity.this, "Bluetooth disabled", Toast.LENGTH_SHORT).show();
+                            toggleScan(false);
                             break;
                         case BluetoothAdapter.STATE_ON:
                             setBluetoothIcon(bluetoothButton, true);
@@ -144,10 +122,11 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         };
 
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mReceiver, filter);
+        registerReceiver(observeBluetoothState, filter);
         return true;
     }
 
+    /** Imposta l'icona al Bluetooth*/
     private void setBluetoothIcon(MenuItem item, boolean status){
         Drawable icon = AppCompatResources.getDrawable(MainActivity.this, status ? R.drawable.ic_round_bluetooth_24px : R.drawable.ic_round_bluetooth_disabled_24px).mutate();
         item.setIcon(icon);
@@ -159,9 +138,16 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_bluetooth) {
+            if (!bluetoothState.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 0);
+            }
+            else bluetoothState.disable();
             return true;
         }
 
@@ -170,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     /** Codice per logica Beacon */
 
+    /** Inizializza il BeaconManager**/
     private void initBeaconManager() {
         beaconManager = BeaconManager.getInstanceForApplication(this);
         // Add all the beacon types we want to discover
@@ -186,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         beaconManager.addRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                if(isScan) storeBeacons(beacons);
+                if(beaconManager.isBound(MainActivity.this) == true) storeBeacons(beacons);
             }
         });
         try {
@@ -194,34 +181,48 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         } catch (RemoteException e) { e.printStackTrace(); }
     }
 
-    /**
-     * Funzione che fa partire la scansione, se ci sono i permessi
-     */
-    private void startScan(){
-        if (!isPermissionGranted()) return;
-        if (!bluetoothState.isEnabled()) {
-            Toast.makeText(this, "Bluetooth is disabled", Toast.LENGTH_LONG).show();
-            return;
+    /** Start o Stop dello scan **/
+    private void toggleScan(boolean enable) {
+        boolean isScan = false;
+        if(beaconManager.isBound(MainActivity.this) == true) beaconManager.unbind(MainActivity.this);
+        else if (enable && isPermissionGranted()) {
+            if (!bluetoothState.isEnabled()) Toast.makeText(MainActivity.this, "Bluetooth is disabled", Toast.LENGTH_LONG).show();
+            else {
+                beaconManager.bind(MainActivity.this);
+                isScan = true;
+            }
         }
-        beaconManager.bind(MainActivity.this);
-        isScan = true;
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        findViewById(R.id.progressBar).setVisibility(isScan ? View.VISIBLE : View.GONE);
+        fab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(MainActivity.this, isScan ? R.color.colorPauseFab : R.color.colorSecondary)));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(MainActivity.this, isScan ? R.drawable.play_to_pause : R.drawable.pause_to_play);
+            fab.setImageDrawable(anim);
+            anim.start();
+        } else fab.setImageDrawable(AppCompatResources.getDrawable(MainActivity.this, isScan ? R.drawable.pause_icon : R.drawable.play_icon));
     }
 
-    /** Stop dello scan **/
-    private void stopScan() {
-        if(beaconManager.isBound(this)) beaconManager.unbind(this);
-        isScan = false;
-    }
-
-
+    /** Memorizza i beacons **/
     private void storeBeacons(Collection<Beacon> beacons){
         if (beacons.size() > 0) {
+
             Beacon firstBeacon = beacons.iterator().next();
-            if(!beaconSaved.containsKey(firstBeacon.getBluetoothAddress())) beaconSaved.put(firstBeacon.getBluetoothAddress(), firstBeacon);
+
+            LinearLayout dynamicContent = (LinearLayout) findViewById(R.id.dynamic_content);
+            View wizardView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
+            ((TextView)wizardView.findViewById(R.id.beacon_address)).setText(firstBeacon.getBluetoothAddress());
+            ((TextView)wizardView.findViewById(R.id.beacon_type)).setText(BeaconUtility.getType(firstBeacon));
+            ((TextView)wizardView.findViewById(R.id.beacon_distance)).setText(String.format("%.2f", firstBeacon.getDistance()) + " m");
+
+            dynamicContent.addView(wizardView);
+
+            /*if(!beaconSaved.containsKey(firstBeacon.getBluetoothAddress())) beaconSaved.put(firstBeacon.getBluetoothAddress(), firstBeacon);
             if(!ListElementsArrayList.contains(firstBeacon.toString())){
                 ListElementsArrayList.add(firstBeacon.toString());
                 adapter.notifyDataSetChanged();
-            }
+            }*/
 
             Log.d(TAG,"size " + beacons.size());
             Log.d(TAG,"The first beacon " + firstBeacon.toString() + " is about " + firstBeacon.getDistance() + " meters away.");

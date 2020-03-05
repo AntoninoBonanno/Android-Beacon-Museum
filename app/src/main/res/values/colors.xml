@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimaryDark">#2977F8</color>
     <color name="colorAccent">#D81B60</color>
 
     <color name="colorPrimary">#4285F4</color>
@@ -38,9 +38,9 @@
     <color name="bluetoothStateTextcolor">#DDFFFFFF</color>
     <color name="bluetoothDisabled">@color/colorOnError</color>
     <color name="bluetoothTurningOff">#FF9800</color>
-    <color name="bluetoothTurningOn">#8BC34A</color>
+    <color name="bluetoothTurningOn">#55E319</color>
 
-    <color name="colorPauseFab">#EF5350 </color>
+    <color name="colorPauseFab">#EF5350</color>
 
     <color name="rateStarColor">#FFC107</color>
 
