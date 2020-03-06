@@ -15,7 +15,7 @@
 		app:layout_constraintStart_toStartOf="parent"
 		app:layout_constraintTop_toTopOf="parent"
 		app:layout_constraintVertical_chainStyle="packed"
-		app:srcCompat="@mipmap/ic_empty" />
+		app:srcCompat="@mipmap/start_scan" />
 
 	<TextView
 		android:id="@+id/empty_text"

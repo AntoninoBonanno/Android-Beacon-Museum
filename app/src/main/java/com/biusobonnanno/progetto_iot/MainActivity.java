@@ -209,7 +209,11 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             newBeaconView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    toggleScan(false);
                     Log.d(TAG,"Beacon click " + findBeacon.toString());
+                    Intent beaconResultsIntent = new Intent(MainActivity.this, BeaconResultsActivity.class);
+                    beaconResultsIntent.putExtra("BeaconUuid", findBeacon.getId1().toString()); //modificare se i beacon non sono di tipo iBeacon
+                    startActivity(beaconResultsIntent);
                 }
             });
             ((TextView)newBeaconView.findViewById(R.id.beacon_address)).setText(findBeacon.getBluetoothAddress());
