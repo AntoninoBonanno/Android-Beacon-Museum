@@ -214,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             });
             ((TextView)newBeaconView.findViewById(R.id.beacon_address)).setText(findBeacon.getBluetoothAddress());
             ((TextView)newBeaconView.findViewById(R.id.beacon_type)).setText(BeaconUtility.getType(findBeacon));
+            ((TextView)newBeaconView.findViewById(R.id.beacon_name)).setText(findBeacon.getBluetoothName());
             ((TextView)newBeaconView.findViewById(R.id.beacon_distance)).setText(String.format("%.2f", findBeacon.getDistance()));
             dynamicContent.addView(newBeaconView);
         }
