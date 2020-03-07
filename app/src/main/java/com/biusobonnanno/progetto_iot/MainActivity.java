@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
     private BeaconManager beaconManager;
+    private boolean showBeacon = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         super.onDestroy();
         unregisterReceiver(observeBluetoothState);
         toggleScan(false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showBeacon = true;
     }
 
     @Override
@@ -205,12 +212,13 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         Iterator<Beacon> beaconIterator = beacons.iterator();
         while (beaconIterator.hasNext()){
             final Beacon findBeacon = beaconIterator.next();
-            View newBeaconView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
+            final View newBeaconView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
             newBeaconView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(!showBeacon) return;
+                    showBeacon = false;
                     toggleScan(false);
-                    Log.d(TAG,"Beacon click " + findBeacon.toString());
                     Intent beaconResultsIntent = new Intent(MainActivity.this, BeaconResultsActivity.class);
                     beaconResultsIntent.putExtra("BeaconUuid", findBeacon.getId1().toString()); //modificare se i beacon non sono di tipo iBeacon
                     startActivity(beaconResultsIntent);
