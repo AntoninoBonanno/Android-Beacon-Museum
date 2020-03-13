@@ -7,6 +7,20 @@ const cors = require("cors")
 // Import base routes
 const indexRouter = require('./routes/index');
 
+/* 
+  <-- Setup MONGODB -->
+
+  mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray
+
+  <-- mongo shell -->
+  use progetto-iot
+  db.artworks.updateMany({},{'$set' : {'Beacon_id': "0"}});
+  db.artworks.createIndex({"Beacon_id":1});
+
+  <-- association of beacons with artwork -->
+  db.artworks.update({'_id': id_artworks }, {'$set' : {'Beacon_id': beacon_id }});
+*/
+
 // Database configuration
 const host = 'localhost';
 const dbName = 'progetto-iot';

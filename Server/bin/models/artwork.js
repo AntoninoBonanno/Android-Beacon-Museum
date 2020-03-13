@@ -1,8 +1,5 @@
 const mongoose = require('mongoose');
 
-//mongoimport --db progetto-iot --collection artworks --file C:\Users\Nino\Downloads\Artworks.json --jsonArray
-//db.artworks.updateMany({},{'$set' : {'Beacon_id': "0"}});
-//db.artworks.createIndex({"Beacon_id":1});
 const artSchema = mongoose.Schema({
     Beacon_id: { type: String, required: true },
     Title: String,
