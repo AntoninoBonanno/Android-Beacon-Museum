@@ -4,6 +4,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,12 +27,13 @@ public class BeaconResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beacon_results);
-        String beaconUuid = getIntent().getStringExtra("BeaconUuid");
+        String beaconHash = getIntent().getStringExtra("BeaconHash");
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(beaconUuid);
+            actionBar.setTitle(beaconHash);
+            Log.d("hash", "onCreate: " + beaconHash);
         }
 
         final View progressBar2 = findViewById(R.id.progressBar2);

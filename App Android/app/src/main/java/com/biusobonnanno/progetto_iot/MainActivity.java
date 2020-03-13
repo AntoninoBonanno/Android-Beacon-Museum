@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -211,7 +212,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                     showBeacon = false;
                     toggleScan(false);
                     Intent beaconResultsIntent = new Intent(MainActivity.this, BeaconResultsActivity.class);
-                    beaconResultsIntent.putExtra("BeaconUuid", findBeacon.getId1().toString()); //modificare se i beacon non sono di tipo iBeacon
+                    beaconResultsIntent.putExtra("BeaconHash", String.valueOf(findBeacon.hashCode()));
+
+                    Log.d("hash", "first: " + String.valueOf(findBeacon.hashCode()));
                     startActivity(beaconResultsIntent);
                 }
             });
