@@ -28,9 +28,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
 
+    //AltBeacon - library (for scan Beacon)
     implementation 'org.altbeacon:android-beacon-library:2+'
     //noinspection GradleCompatible
     implementation 'com.android.support:localbroadcastmanager:28.0.0'
 
+    //Android-async-http - library (for send http request)
     implementation 'com.loopj.android:android-async-http:1.4.9'
 }

@@ -1,20 +1,6 @@
 package com.biusobonnanno.progetto_iot.Models;
 
-import android.widget.TextView;
-
-import com.biusobonnanno.progetto_iot.R;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
-
 import org.altbeacon.beacon.Beacon;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
-import cz.msebera.android.httpclient.Header;
 
 
 public class BeaconUtility{

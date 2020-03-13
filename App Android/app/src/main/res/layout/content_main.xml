@@ -10,7 +10,11 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/dynamic_content"
@@ -20,8 +24,9 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="1dp"
             android:layout_marginBottom="1dp"
-            android:orientation="vertical" >
-        <include layout="@layout/item_beacon_empty" />
+            android:orientation="vertical">
+
+            <include layout="@layout/item_beacon_empty" />
         </LinearLayout>
     </ScrollView>
 

@@ -4,14 +4,14 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.biusobonnanno.progetto_iot.Models.BeaconUtility;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -26,29 +26,53 @@ public class BeaconResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beacon_results);
+        String beaconUuid = getIntent().getStringExtra("BeaconUuid");
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle(beaconUuid);
         }
-        String beaconUuid = getIntent().getStringExtra("BeaconUuid");
-        ((TextView)findViewById(R.id.beacon_uuid)).setText(beaconUuid);
 
-        new AsyncHttpClient().get("http://192.168.1.186:4000/0", new JsonHttpResponseHandler() {
+        final View progressBar2 = findViewById(R.id.progressBar2);
+        new AsyncHttpClient().get("http://192.168.1.186:4000/0", new JsonHttpResponseHandler() { //cambiare ip -> usare properties?
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray responseBody) {
-                try {
-                    ((TextView)findViewById(R.id.beacon_uuid)).setText(responseBody.getJSONObject(0).getString("Title"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                progressBar2.setVisibility(View.GONE);
+                showResults(responseBody);
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-
+                progressBar2.setVisibility(View.GONE);
+                Toast.makeText(BeaconResultsActivity.this, "Error to load info", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void showResults(JSONArray results) {
+        Toast.makeText(BeaconResultsActivity.this, results.length() + " results", Toast.LENGTH_LONG).show();
+        if(results.length() <= 0) return;
+
+        LinearLayout dynamicContent = findViewById(R.id.dynamic_artwork);
+        dynamicContent.removeAllViews();
+
+        for (int i = 0; i < results.length(); i++) {
+            try {
+                JSONObject artwork = results.getJSONObject(i);
+                View newArtworkView = getLayoutInflater().inflate(R.layout.item_artwork, dynamicContent, false);
+                ((TextView)newArtworkView.findViewById(R.id.title_artwork)).setText(artwork.getString("Title"));
+
+                JSONArray artist = artwork.getJSONArray("Artist");
+                String a = "";
+                for (int j = 0; j < artist.length(); j++) a += artist.getString(j) + ((j == artist.length()-1) ? "" : ", ");
+                ((TextView)newArtworkView.findViewById(R.id.artist_artwork)).setText(a);
+
+                ((TextView)newArtworkView.findViewById(R.id.data_artwork)).setText(artwork.getString("Date"));
+                dynamicContent.addView(newArtworkView);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
