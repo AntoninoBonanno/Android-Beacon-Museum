@@ -19,6 +19,10 @@ const indexRouter = require('./routes/index');
 
   <-- association of beacons with artwork -->
   db.artworks.update({'_id': id_artworks }, {'$set' : {'Beacon_id': beacon_id }});
+
+  //beacon_id_Nino = -1496743469
+  //beacon_id_Mario = 443575690
+
 */
 
 // Database configuration

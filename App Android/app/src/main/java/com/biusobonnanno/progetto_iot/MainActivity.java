@@ -1,7 +1,8 @@
 package com.biusobonnanno.progetto_iot;
 
 import android.Manifest;
-import android.annotation.TargetApi;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,6 +22,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
@@ -35,7 +38,6 @@ import android.widget.Toast;
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
-import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import java.util.Collection;
@@ -47,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private BeaconManager beaconManager;
     private boolean showBeacon = true;
 
@@ -60,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
             finish();
         }
+
+        isPermissionGranted();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -159,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
         try {
-            beaconManager.startRangingBeaconsInRegion(new Region(" com.biusobonnanno.progetto_iot", null, null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region("com.biusobonnanno.progetto_iot", null, null, null));
         } catch (RemoteException e) { e.printStackTrace(); }
     }
 
@@ -219,8 +223,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     private boolean isPermissionGranted(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (this.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                /*if (this.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                   if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                         builder.setTitle("This app needs background location access");
                         builder.setMessage("Please grant location access so this app can detect beacons in the background.");
@@ -233,8 +237,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                             }
                         });
                         builder.show();
-                    }
-                    else {
+                   }
+                   else {
                         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                         builder.setTitle("Functionality limited");
                         builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons in the background.  Please go to Settings -> Applications -> Permissions and grant background location access to this app.");
@@ -242,13 +246,11 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
-                                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_BACKGROUND_LOCATION);
                             }
                         });
                         builder.show();
-                    }
-                    return true;
-                }
+                   }
+                }*/
                 return true;
             } else {
                 if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {

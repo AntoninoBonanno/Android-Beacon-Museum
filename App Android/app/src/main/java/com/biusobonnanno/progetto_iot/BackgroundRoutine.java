@@ -1,8 +1,13 @@
 package com.biusobonnanno.progetto_iot;
 
 import android.app.Application;
-import android.content.Intent;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.biusobonnanno.progetto_iot.Models.BeaconUtility;
 
@@ -23,21 +28,15 @@ public class BackgroundRoutine extends Application implements BootstrapNotifier 
         Log.d(TAG, "App started up");
         BeaconManager beaconManager = BeaconUtility.getBeaconManager(this);
 
-        regionBootstrap = new RegionBootstrap(this, new Region(" com.biusobonnanno.progetto_iot", null, null, null));
-       // backgroundPowerSaver = new BackgroundPowerSaver(this);
-
-        beaconManager.setBackgroundBetweenScanPeriod(0);
-        beaconManager.setBackgroundScanPeriod(1100);
-        beaconManager.setBackgroundMode(true);
+        regionBootstrap = new RegionBootstrap(this, new Region("com.biusobonnanno.progetto_iot1", null, null, null));
+        backgroundPowerSaver = new BackgroundPowerSaver(this);
     }
 
     @Override
     public void didEnterRegion(Region region) {
         Log.d(TAG, "Got a didEnterRegion call");
         //regionBootstrap.disable(); //da rimuovere
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.startActivity(intent);
+        sendNotification("Beacon", "Background");
     }
 
     @Override
@@ -46,7 +45,24 @@ public class BackgroundRoutine extends Application implements BootstrapNotifier 
     }
 
     @Override
-    public void didDetermineStateForRegion(int i, Region region) {
+    public void didDetermineStateForRegion(int state, Region region) {
+        Log.d(TAG, "I have just switched from seeing/not seeing beacons: "+state);
+    }
 
+    public void sendNotification(String title, String text) {
+        String NOTIFICATION_CHANNEL_ID = "channel_id";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, getString(R.string.app_name), NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(102, builder.build());
     }
 }
