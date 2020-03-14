@@ -27,17 +27,18 @@ public class BeaconResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_beacon_results);
-        String beaconHash = getIntent().getStringExtra("BeaconHash");
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle(beaconHash);
-            Log.d("hash", "onCreate: " + beaconHash);
+            actionBar.setTitle(getIntent().getStringExtra("BeaconName"));
         }
 
+        String url = "http://192.168.1.186:4000/"; //cambiare ip
+
         final View progressBar2 = findViewById(R.id.progressBar2);
-        new AsyncHttpClient().get("http://192.168.1.186:4000/0", new JsonHttpResponseHandler() { //cambiare ip -> usare properties?
+        String beaconHash = getIntent().getStringExtra("BeaconHash");
+        new AsyncHttpClient().get(url+beaconHash, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray responseBody) {
                 progressBar2.setVisibility(View.GONE);
@@ -51,6 +52,7 @@ public class BeaconResultsActivity extends AppCompatActivity {
         });
     }
 
+    /** Recupera le informazioni dal server **/
     private void showResults(JSONArray results) {
         Toast.makeText(BeaconResultsActivity.this, results.length() + " results", Toast.LENGTH_LONG).show();
         if(results.length() <= 0) return;

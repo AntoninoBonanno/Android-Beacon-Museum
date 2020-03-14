@@ -1,12 +1,29 @@
 package com.biusobonnanno.progetto_iot.Models;
 
+import android.content.Context;
+
 import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor;
 
 import java.util.HashMap;
 
 
 public class BeaconUtility {
+
+    /** Inizializza il BeaconManager**/
+    static public BeaconManager getBeaconManager(Context context) {
+        BeaconManager beaconManager = BeaconManager.getInstanceForApplication(context);
+        beaconManager.getBeaconParsers().clear();
+        // Add all the beacon types we want to discover
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-2=0499,i:4-19,i:20-21,i:22-23,p:24-24")); // TBD - RUUVI_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24")); // iBeacon - IBEACON_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT));
+        return beaconManager;
+    }
 
     static public String getType(Beacon beacon){
         if(beacon.getServiceUuid() ==  0xFEAA) { // This is an Eddystone format

@@ -1,6 +1,7 @@
 package com.biusobonnanno.progetto_iot;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -24,7 +25,6 @@ import androidx.core.content.ContextCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
     private BeaconManager beaconManager;
     private boolean showBeacon = true;
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        initBeaconManager(); //inizializzo il beaconManager
+        beaconManager = BeaconUtility.getBeaconManager(this); //inizializzo il beaconManager
 
         findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,17 +149,6 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     /** Codice per logica Beacon */
 
-    /** Inizializza il BeaconManager**/
-    private void initBeaconManager() {
-        beaconManager = BeaconManager.getInstanceForApplication(this);
-        // Add all the beacon types we want to discover
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-2=0499,i:4-19,i:20-21,i:22-23,p:24-24")); // TBD - RUUVI_LAYOUT
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24")); // iBeacon - IBEACON_LAYOUT
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT));
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT));
-    }
-
     /** Funzione che individua i beacon  */
     @Override
     public void onBeaconServiceConnect() {
@@ -169,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
         try {
-            beaconManager.startRangingBeaconsInRegion(new Region("myRangingUniqueId", null, null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region(" com.biusobonnanno.progetto_iot", null, null, null));
         } catch (RemoteException e) { e.printStackTrace(); }
     }
 
@@ -213,8 +203,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                     toggleScan(false);
                     Intent beaconResultsIntent = new Intent(MainActivity.this, BeaconResultsActivity.class);
                     beaconResultsIntent.putExtra("BeaconHash", String.valueOf(findBeacon.hashCode()));
-
-                    Log.d("hash", "first: " + String.valueOf(findBeacon.hashCode()));
+                    beaconResultsIntent.putExtra("BeaconName", findBeacon.getBluetoothName());
                     startActivity(beaconResultsIntent);
                 }
             });
@@ -231,8 +220,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 if (this.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    return true;
-                    /*if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                    if (this.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                         builder.setTitle("This app needs background location access");
                         builder.setMessage("Please grant location access so this app can detect beacons in the background.");
@@ -254,11 +242,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
+                                requestPermissions(new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_BACKGROUND_LOCATION);
                             }
                         });
                         builder.show();
                     }
-                    */
+                    return true;
                 }
                 return true;
             } else {
@@ -313,11 +302,9 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                     builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons when in the background.");
                     builder.setPositiveButton(android.R.string.ok, null);
                     builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
                         @Override
                         public void onDismiss(DialogInterface dialog) {
                         }
-
                     });
                     builder.show();
                 }
