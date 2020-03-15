@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         setSupportActionBar(toolbar);
 
         if(bluetoothState == null) {
-            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.bluetooth_not_supported), Toast.LENGTH_LONG).show();
             finish();
         }
         isPermissionGranted();
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(getString(R.string.app_name))
-                .setContentText(getString(R.string.found_beacon) + mBeacon.getBeaconName())
+                .setContentText(getString(R.string.found_beacon) + " " + mBeacon.getBeaconName())
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
         builder.setContentIntent(resultPendingIntent);
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                    }
                    else {
                         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                        builder.setTitle("Functionality limited");
+                        builder.setTitle(getString(R.string.function_limited));
                         builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons in the background.  Please go to Settings -> Applications -> Permissions and grant background location access to this app.");
                         builder.setPositiveButton(android.R.string.ok, null);
                         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -322,15 +322,15 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                 }
                 else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Permission needed");
-                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons.");
+                    builder.setTitle(getString(R.string.permission_needed));
+                    builder.setMessage(getString(R.string.since_location));
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
                         }
                     });
-                    builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
@@ -345,37 +345,20 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_FINE_LOCATION: {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Functionality limited");
-                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons.");
-                    builder.setPositiveButton(android.R.string.ok, null);
-                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                        }
-                    });
-                    builder.show();
-                }
-                return;
-            }
-            case PERMISSION_REQUEST_BACKGROUND_LOCATION: {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Functionality limited");
-                    builder.setMessage("Since background location access has not been granted, this app will not be able to discover beacons when in the background.");
-                    builder.setPositiveButton(android.R.string.ok, null);
-                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                        }
-                    });
-                    builder.show();
-                }
-                return;
+        if(requestCode == PERMISSION_REQUEST_FINE_LOCATION || requestCode == PERMISSION_REQUEST_BACKGROUND_LOCATION){
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(getString(R.string.function_limited));
+                builder.setMessage(getString((requestCode == PERMISSION_REQUEST_FINE_LOCATION) ? R.string.since_location : R.string.since_background_location));
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                    }
+                });
+                builder.show();
             }
         }
+        return;
     }
 }
