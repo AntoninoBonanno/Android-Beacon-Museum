@@ -2,7 +2,9 @@
 
 ### Setup MONGODB
 
-	`> mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray ` (for upload json)
+`> mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray` (for upload json)
+
+Download Json: https://github.com/MuseumofModernArt/collection/blob/master/Artworks.json
 
 *  MONGO shell
 
