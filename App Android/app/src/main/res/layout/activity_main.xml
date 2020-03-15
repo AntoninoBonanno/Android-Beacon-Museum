@@ -26,7 +26,7 @@
             android:layout_marginTop="-6dp"
             android:layout_marginBottom="-6dp"
             android:indeterminate="true"
-            android:indeterminateTint="@color/bluetoothTurningOn"
+            android:indeterminateTint="@color/colorPauseFab"
             android:visibility="gone"
             tools:visibility="visible" />
 

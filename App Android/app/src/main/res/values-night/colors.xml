@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+	<color name="colorPrimary">#1B50A6</color>
+
+	<color name="colorPauseFab">#BD423F</color>
+
 	<color name="colorBackground">#46464A</color>
 	<color name="colorOnBackground">#FFF</color>
 	

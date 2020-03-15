@@ -3,6 +3,8 @@ package com.biusobonnanno.progetto_iot;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,7 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.biusobonnanno.progetto_iot.Models.BeaconUtility;
+import com.biusobonnanno.progetto_iot.models.MyBeacon;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -38,10 +40,12 @@ import android.widget.Toast;
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     private BluetoothAdapter bluetoothState = BluetoothAdapter.getDefaultAdapter();
@@ -51,23 +55,30 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
     private static final int PERMISSION_REQUEST_BACKGROUND_LOCATION = 2;
     private BeaconManager beaconManager;
     private boolean showBeacon = true;
+    private HashMap<Integer, MyBeacon> beaconSaved = new HashMap<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         if(bluetoothState == null) {
             Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
             finish();
         }
-
         isPermissionGranted();
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        beaconManager = BeaconUtility.getBeaconManager(this); //inizializzo il beaconManager
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+        // Add all the beacon types we want to discover
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-2=0499,i:4-19,i:20-21,i:22-23,p:24-24")); // TBD - RUUVI_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("m:0-3=4c000215,i:4-19,i:20-21,i:22-23,p:24-24")); // iBeacon - IBEACON_LAYOUT
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_UID_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_URL_LAYOUT));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout(BeaconParser.EDDYSTONE_TLM_LAYOUT));
 
         findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,6 +86,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
                 toggleScan(true);
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        showBeacon = false;
     }
 
     @Override
@@ -159,7 +176,18 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         beaconManager.addRangeNotifier(new RangeNotifier() {
             @Override
             public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
-                if(beaconManager.isBound(MainActivity.this) == true) showBeacons(beacons);
+                if(beaconManager.isBound(MainActivity.this) != true) return;
+                if (beacons.size() > 0) {
+                    for (Beacon beacon : beacons) {
+                        if(!beaconSaved.containsKey(beacon.hashCode())){
+                            MyBeacon mBeacon = new MyBeacon(beacon);
+                            if(!showBeacon) sendNotification(mBeacon);
+                            beaconSaved.put(beacon.hashCode(), mBeacon);
+                        }
+                        else beaconSaved.get(beacon.hashCode()).update(beacon);
+                    }
+                }
+                showBeacons();
             }
         });
         try {
@@ -190,33 +218,69 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         } else fab.setImageDrawable(AppCompatResources.getDrawable(MainActivity.this, isScan ? R.drawable.pause_icon : R.drawable.play_icon));
     }
 
-    /** Memorizza i beacons **/
-    private void showBeacons(Collection<Beacon> beacons){
-        if (beacons.size() <= 0) return;
+    /** Mostra i beacons **/
+    private void showBeacons(){
         LinearLayout dynamicContent = findViewById(R.id.dynamic_content);
         dynamicContent.removeAllViews();
-        Iterator<Beacon> beaconIterator = beacons.iterator();
-        while (beaconIterator.hasNext()){
-            final Beacon findBeacon = beaconIterator.next();
+
+        if(beaconSaved.size() == 0) {
+            dynamicContent.addView(getLayoutInflater().inflate(R.layout.item_beacon_empty, dynamicContent, false));
+            return;
+        }
+
+        for (final MyBeacon beacon: beaconSaved.values()) {
+            if(new Date().getTime() - beacon.getLastSeen() >= 20000){
+                beaconSaved.remove(beacon.hashCode());
+                continue;
+            }
+
             final View newBeaconView = getLayoutInflater().inflate(R.layout.item_beacon, dynamicContent, false);
             newBeaconView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if(!showBeacon) return;
                     showBeacon = false;
-                    toggleScan(false);
                     Intent beaconResultsIntent = new Intent(MainActivity.this, BeaconResultsActivity.class);
-                    beaconResultsIntent.putExtra("BeaconHash", String.valueOf(findBeacon.hashCode()));
-                    beaconResultsIntent.putExtra("BeaconName", findBeacon.getBluetoothName());
+                    beaconResultsIntent.putExtra("BeaconHash", beacon.getHashCode());
+                    beaconResultsIntent.putExtra("BeaconName", beacon.getBeaconName());
                     startActivity(beaconResultsIntent);
                 }
             });
-            ((TextView)newBeaconView.findViewById(R.id.beacon_address)).setText(findBeacon.getBluetoothAddress());
-            ((TextView)newBeaconView.findViewById(R.id.beacon_type)).setText(BeaconUtility.getType(findBeacon));
-            ((TextView)newBeaconView.findViewById(R.id.beacon_name)).setText(findBeacon.getBluetoothName());
-            ((TextView)newBeaconView.findViewById(R.id.beacon_distance)).setText(String.format("%.2f", findBeacon.getDistance()));
+            ((TextView)newBeaconView.findViewById(R.id.beacon_address)).setText(beacon.getBeaconAddress());
+            ((TextView)newBeaconView.findViewById(R.id.beacon_type)).setText(beacon.getBeaconType());
+            ((TextView)newBeaconView.findViewById(R.id.beacon_name)).setText(beacon.getBeaconName());
+            ((TextView)newBeaconView.findViewById(R.id.beacon_distance)).setText(beacon.getDistance());
             dynamicContent.addView(newBeaconView);
         }
+    }
+
+    /** Invia una notifica se l'app è in pausa**/
+    private void sendNotification(MyBeacon mBeacon) {
+        String NOTIFICATION_CHANNEL_ID = "channel_id";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, getString(R.string.app_name), NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent resultIntent = new Intent(this, BeaconResultsActivity.class);
+        resultIntent.putExtra("BeaconHash", mBeacon.getHashCode());
+        resultIntent.putExtra("BeaconName", mBeacon.getBeaconName());
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(resultIntent);
+
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.found_beacon) + mBeacon.getBeaconName())
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+        builder.setContentIntent(resultPendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(101, builder.build());
     }
 
     /** Codice per avere accesso alla localizzazione **/
