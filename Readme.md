@@ -22,7 +22,7 @@
 
 ### Setup Server
 
- * Dentro la cartella Server
+ * Inside the Server folder
 
 	`> npm install`
 	
