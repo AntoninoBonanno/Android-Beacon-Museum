@@ -37,3 +37,8 @@ Download Json: https://github.com/MuseumofModernArt/collection/blob/master/Artwo
 * Change the server URL inside the file BeaconResultsActivity.java
 * Build and run the app
 
+### Authors
+
+[Bonanno Antonino](https://github.com/AntoninoBonanno)
+
+[Biuso Mario](https://github.com/Mariobiuso)
