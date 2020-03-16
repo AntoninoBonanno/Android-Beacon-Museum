@@ -220,6 +220,8 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
 
     /** Mostra i beacons **/
     private void showBeacons(){
+        if(!showBeacon) return;
+
         LinearLayout dynamicContent = findViewById(R.id.dynamic_content);
         dynamicContent.removeAllViews();
 
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
         }
 
         for (final MyBeacon beacon: beaconSaved.values()) {
-            if(new Date().getTime() - beacon.getLastSeen() >= 20000){
+            if(new Date().getTime() - beacon.getLastSeen() >= 10000){
                 beaconSaved.remove(beacon.hashCode());
                 continue;
             }

@@ -2,7 +2,9 @@
 
 ### Setup MONGODB
 
-	`> mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray ` (for upload json)
+`> mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray ` (for upload json)
+
+https://github.com/MuseumofModernArt/collection/blob/master/Artworks.json
 
 *  MONGO shell
 
@@ -16,16 +18,22 @@
 
 	`> db.artworks.update({'_id': id_artworks }, {'$set' : {'Beacon_id': beacon_id }});`
 
-	Beacon 1 = -1496743469
+	beacon_id_1 = -1496743469
 
-	Beacon 2 = 443575690
+	beacon_id_2 = 443575690
+	
+	NOTE: beacon_id is the integer hash of the beacon and not UUID because we noticed that the two beacons had the same UUID but different 'major' and 'minor'.
 
 ### Setup Server
 
- * Dentro la cartella Server
+* Dentro la cartella Server
 
 	`> npm install`
-	
+
 	`> npm start`
 
+### Setup App Android
+
+* Cambiare l'url del server dentro il file BeaconResultsActivity.java
+* Compilare ed eseguire l'app 
 

@@ -10,12 +10,11 @@ public class TelemetryData {
         this.pduCount = pduCount;
         this.uptime = uptime;
 
-        /** Da testare **/
         float ret = temperature / 256F;
-        if (ret == (1 << 7)) { // 0x8000
+        if (ret == (1 << 7)) { // 0x8000 -> kt: (ret == (1 shl 7).toFloat()) //da verificare se la conversione è corretta
             this.temperature = 0F;
         }
-        this.temperature = (ret > (1 << 7)) ? ret - (1 << 8) : ret;
+        else this.temperature = (ret > (1 << 7)) ? ret - (1 << 8) : ret; // kt: if (ret > (1 shl 7)) ret - (1 shl 8) else ret //da verificare se la conversione è corretta
     }
 
     public long getVersion() {

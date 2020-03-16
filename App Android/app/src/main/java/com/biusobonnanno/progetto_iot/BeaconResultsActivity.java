@@ -7,12 +7,15 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.URLUtil;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +24,8 @@ import org.json.JSONObject;
 import cz.msebera.android.httpclient.Header;
 
 public class BeaconResultsActivity extends AppCompatActivity {
+
+    private static String url = "http://192.168.1.186:4000/"; //cambiare url
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +37,6 @@ public class BeaconResultsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle(getIntent().getStringExtra("BeaconName"));
         }
-
-        String url = "http://192.168.1.186:4000/"; //cambiare ip
 
         final View progressBar2 = findViewById(R.id.progressBar2);
         String beaconHash = getIntent().getStringExtra("BeaconHash");
@@ -47,6 +50,7 @@ public class BeaconResultsActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 progressBar2.setVisibility(View.GONE);
                 Toast.makeText(BeaconResultsActivity.this, "Error to load info", Toast.LENGTH_LONG).show();
+                super.onFailure(statusCode, headers, responseString, throwable);
             }
         });
     }
@@ -69,6 +73,9 @@ public class BeaconResultsActivity extends AppCompatActivity {
                 String a = "";
                 for (int j = 0; j < artist.length(); j++) a += artist.getString(j) + ((j == artist.length()-1) ? "" : ", ");
                 ((TextView)newArtworkView.findViewById(R.id.artist_artwork)).setText(a);
+
+                if(URLUtil.isValidUrl(artwork.getString("ThumbnailURL"))) Picasso.get().load(artwork.getString("ThumbnailURL")).fit()
+                        .centerCrop().error(R.mipmap.no_image).into((ImageView) newArtworkView.findViewById(R.id.imageView));
 
                 ((TextView)newArtworkView.findViewById(R.id.data_artwork)).setText(artwork.getString("Date"));
                 dynamicContent.addView(newArtworkView);
