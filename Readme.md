@@ -38,7 +38,5 @@ Download Json: https://github.com/MuseumofModernArt/collection/blob/master/Artwo
 * Build and run the app
 
 ### Authors
-
-[Bonanno Antonino](https://github.com/AntoninoBonanno)
-
-[Biuso Mario](https://github.com/Mariobiuso)
+* [Bonanno Antonino](https://github.com/AntoninoBonanno)
+* [Biuso Mario](https://github.com/Mariobiuso)
