@@ -34,6 +34,6 @@ Download Json: https://github.com/MuseumofModernArt/collection/blob/master/Artwo
 
 ### Setup App Android
 
-* Cambiare l'url del server dentro il file BeaconResultsActivity.java
-* Compilare ed eseguire l'app
+* Change the server URL inside the file BeaconResultsActivity.java
+* Build and run the app
 
