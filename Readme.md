@@ -1,5 +1,5 @@
 # Android Beacon Museum
-This is a simple project for Android (Java) that simulates moving a user inside a museum.
+This is a simple project for Android *(Java)* that simulates moving a user inside a museum.
 Each Beacon detected represents a room in a museum, where there are several paintings inside.
 
 The Android application detects nearby beacons and collects information about the beacons by contacting a server.
@@ -7,11 +7,11 @@ A notification will be sent when the application is paused and detects a new bea
 
 The server is written in Node.js and we have used MongoDB for the database.
 
-The [AltBeacon Android](https://altbeacon.github.io/android-beacon-library/index.html) library was used to detect the beacons.
+The android application has been tested with iBeacon type but has been configured to support all types of beacons (*iBeacon, AltBeacon, Eddystone or RuuviTag*).
 
-We took inspiration from the [Android Beacon Scanner](https://github.com/Bridouille/android-beacon-scanner) project (written in Kotlin).
+* The [AltBeacon Android](https://altbeacon.github.io/android-beacon-library/index.html) library was used to detect the beacons.
+* We took inspiration from the [Android Beacon Scanner](https://github.com/Bridouille/android-beacon-scanner) project *(written in Kotlin)*.
 
-The android application has been tested with iBeacon type but has been configured to support all types of beacons (iBeacon, AltBeacon, Eddystone or RuuviTag).
 
 ## Installation 
 
