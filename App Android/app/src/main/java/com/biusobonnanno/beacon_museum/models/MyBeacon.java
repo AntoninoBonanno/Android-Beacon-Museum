@@ -1,6 +1,6 @@
-package com.biusobonnanno.progetto_iot.models;
+package com.biusobonnanno.beacon_museum.models;
 
-import com.biusobonnanno.progetto_iot.utils.RuuviParser;
+import com.biusobonnanno.beacon_museum.utils.RuuviParser;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor;

@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot;
+package com.biusobonnanno.beacon_museum;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -17,7 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 
-import com.biusobonnanno.progetto_iot.models.MyBeacon;
+import com.biusobonnanno.beacon_museum.models.MyBeacon;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer {
             }
         });
         try {
-            beaconManager.startRangingBeaconsInRegion(new Region("com.biusobonnanno.progetto_iot", null, null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region("com.biusobonnanno.beacon_museum", null, null, null));
         } catch (RemoteException e) { e.printStackTrace(); }
     }
 

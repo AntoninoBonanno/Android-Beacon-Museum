@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot.models;
+package com.biusobonnanno.beacon_museum.models;
 
 public class TelemetryData {
     private long version = 0, batteryMilliVolts = 0, pduCount = 0, uptime = 0;

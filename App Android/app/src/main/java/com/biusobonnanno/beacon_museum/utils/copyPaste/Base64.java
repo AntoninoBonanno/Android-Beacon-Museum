@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot.utils.copyPaste;
+package com.biusobonnanno.beacon_museum.utils.copyPaste;
 
 import java.io.ByteArrayOutputStream;
 

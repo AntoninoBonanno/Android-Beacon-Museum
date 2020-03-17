@@ -1,9 +1,9 @@
-package com.biusobonnanno.progetto_iot.utils;
+package com.biusobonnanno.beacon_museum.utils;
 
 import androidx.annotation.NonNull;
 
-import com.biusobonnanno.progetto_iot.utils.copyPaste.Base64;
-import com.biusobonnanno.progetto_iot.utils.copyPaste.Base91;
+import com.biusobonnanno.beacon_museum.utils.copyPaste.Base64;
+import com.biusobonnanno.beacon_museum.utils.copyPaste.Base91;
 
 /**
  * Created by bridou_n on 05/09/2017.

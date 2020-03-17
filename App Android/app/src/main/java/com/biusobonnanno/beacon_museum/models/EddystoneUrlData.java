@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot.models;
+package com.biusobonnanno.beacon_museum.models;
 
 public class EddystoneUrlData {
     private String url;

@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot;
+package com.biusobonnanno.beacon_museum;
 
 import org.junit.Test;
 

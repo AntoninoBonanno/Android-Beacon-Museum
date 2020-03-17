@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Progetto-IOT</string>
+    <string name="app_name">Beacon-Museum</string>
     <string name="action_settings">Settings</string>
 
     <string name="empty_state_content">Looks like there is nothing here just yet!</string>

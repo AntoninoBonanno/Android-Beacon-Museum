@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot;
+package com.biusobonnanno.beacon_museum;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +25,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class BeaconResultsActivity extends AppCompatActivity {
 
-    private static String url = "http://192.168.1.186:4000/"; //cambiare url
+    private static String url = "http://192.168.1.186:4000/"; //edit url
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,4 +1,4 @@
-package com.biusobonnanno.progetto_iot;
+package com.biusobonnanno.beacon_museum;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.biusobonnanno.progetto_iot", appContext.getPackageName());
+        assertEquals("com.biusobonnanno.beacon_museum", appContext.getPackageName());
     }
 }

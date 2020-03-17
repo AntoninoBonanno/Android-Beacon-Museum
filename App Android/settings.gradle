@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='Progetto-IOT'
+rootProject.name='Beacon-Museum'

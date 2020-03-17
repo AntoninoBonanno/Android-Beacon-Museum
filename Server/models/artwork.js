@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-//mongoimport --db progetto-iot --collection artwork --file C:\Users\Nino\Downloads\Artworks.json --jsonArray
+//mongoimport --db beacon-museum --collection artwork --file Artworks.json --jsonArray
 const artSchema = mongoose.Schema({
     Title: String,
     Artist: Array,
