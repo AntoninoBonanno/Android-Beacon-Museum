@@ -10,10 +10,10 @@ const indexRouter = require('./routes/index');
 /* 
   <-- Setup MONGODB -->
 
-  mongoimport --db progetto-iot --collection artworks --file Artworks.json --jsonArray
+  mongoimport --db beacon-museum --collection artworks --file Artworks.json --jsonArray
 
   <-- mongo shell -->
-  use progetto-iot
+  use beacon-museum
   db.artworks.updateMany({},{'$set' : {'Beacon_id': "0"}});
   db.artworks.createIndex({"Beacon_id":1});
 
@@ -27,7 +27,7 @@ const indexRouter = require('./routes/index');
 
 // Database configuration
 const host = 'localhost';
-const dbName = 'progetto-iot';
+const dbName = 'beacon-museum';
 
 const mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true);
